@@ -26,6 +26,7 @@ const FirstPage: React.FC = () => {
   const [checkpoint, setCheckpoint] = useState('Semi_Realistic')
   const text = "The palace still shook occasionally as the earth rumbled in memory, groaned as if it would deny what had happened. Bars of sunlight cast through rents in the walls made motes of dust glitter where they yet hung in the air. Scorch-marks marred the walls, the floors, the ceilings. Broad black smears crossed the blistered paints and gilt of once-bright murals, soot overlaying crumbling friezes of men and animals which seemed to have attempted to walk before the madness grew quiet. The dead lay everywhere, men and women and children, struck down in attempted flight by the lightnings that had flashed down every corridor, or seized by the fires that had stalked them, or sunken into stone of the palace, the stones that had flowed and sought, almost alive, before stillness came again. In odd counterpoint, colorful tapestries and paintings, masterworks all, hung undisturbed except where bulging walls had pushed them awry. Finely carved furnishings, inlaid with ivory and gold, stood untouched except where rippling floors had toppled them. The mind-twisting had struck at the core, ignoring peripheral things."
 
+console.log(checkpoint)
   // Handle mouse up event to get selected text and fetch from Gemini API
   const handleMouseUp = () => {
     setPrompt("");
@@ -51,7 +52,7 @@ const FirstPage: React.FC = () => {
     const onGenerate = () => {
         const lgprompt = prompt
         setLoading(true)
-        fetchStableDiffusionTxt2img(prompt, 'Graphic Novel',false, selectedCast).then(
+        fetchStableDiffusionTxt2img(prompt, checkpoint,false, selectedCast).then(
             res => {
                 const image = `data:image/png;base64,${res.data.images[0]}`
                 setGeneratedImage(image)
@@ -64,7 +65,6 @@ const FirstPage: React.FC = () => {
         // Can only handle one lora at a time. Woops
         setSelectedCast([actor])
     }
-    console.log(selectedCast)
     const cast:Actor[] = [
         {name:"Baylan Skoll", image: "https://m.media-amazon.com/images/M/MV5BZDg3ZjMxYWEtNzAwNy00MjczLWE2OTItZWNhMjM3NmRlNTRmXkEyXkFqcGc@._V1_.jpg", triggerwords:"BAYLAN SKOLL <lora:Baylan_Skoll:.8>"},
         {name:"Omar Nobody", image: "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/42396cbc-828d-4e39-a346-86f7415f67e3/original=true,quality=90/_SDXL_OmarCover.jpeg", triggerwords:"OMARNOBODY <lora:OmarNobody:.8>"},
