@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
     Box,
     Container,
@@ -23,6 +23,12 @@ import db from './db/jsondb';
 import ImageStyleSelect from "./components/StyleSelect";
 import { harrypottertext } from "./data/harrypottertxt";
 
+interface GeneratedImage {
+    id: string;
+    img: string;
+    prompt: string;
+}
+
 const FirstPage: React.FC = () => {
     const [prompt, setPrompt] = useState("");
     const [lastGenPrompt, setLastGenPrompt] = useState('');
@@ -30,11 +36,14 @@ const FirstPage: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [selectedCast, setSelectedCast] = useState<Actor[]>([]);
     const [openGallery, setOpenGallery] = useState(false); // State for gallery modal
-    const [savedImages, setSavedImages] = useState<string[]>([]); // State for saved images
+    const [openImageModal, setOpenImageModal] = useState(false); // State for individual image modal
+    const [selectedImage, setSelectedImage] = useState<string | null>(null); // Selected image for modal
+    const [selectedImagePrompt, setSelectedImagePrompt] = useState<string>(''); // Selected image prompt
+    const [savedImages, setSavedImages] = useState<GeneratedImage[]>([]); // State for saved images with prompts
     const [checkpoint, setCheckpoint] = useState('Semi_Realistic'); // Style checkpoint
+    const [lastSelectedText, setLastSelectedText] = useState(''); // Selected text from the book
 
-    const [lastSelectedText, setLastSelectedText] = useState('')
-  const text = "The palace still shook occasionally as the earth rumbled in memory, groaned as if it would deny what had happened. Bars of sunlight cast through rents in the walls made motes of dust glitter where they yet hung in the air. Scorch-marks marred the walls, the floors, the ceilings. Broad black smears crossed the blistered paints and gilt of once-bright murals, soot overlaying crumbling friezes of men and animals which seemed to have attempted to walk before the madness grew quiet. The dead lay everywhere, men and women and children, struck down in attempted flight by the lightnings that had flashed down every corridor, or seized by the fires that had stalked them, or sunken into stone of the palace, the stones that had flowed and sought, almost alive, before stillness came again. In odd counterpoint, colorful tapestries and paintings, masterworks all, hung undisturbed except where bulging walls had pushed them awry. Finely carved furnishings, inlaid with ivory and gold, stood untouched except where rippling floors had toppled them. The mind-twisting had struck at the core, ignoring peripheral things.";
+    const text = "The palace still shook occasionally as the earth rumbled in memory, groaned as if it would deny what had happened..."; // Truncated for brevity
 
     const cast: Actor[] = [
         { name: "Baylan Skoll", image: "https://m.media-amazon.com/images/M/MV5BZDg3ZjMxYWEtNzAwNy00MjczLWE2OTItZWNhMjM3NmRlNTRmXkEyXkFqcGc@._V1_.jpg", triggerwords: "BAYLAN SKOLL <lora:Baylan_Skoll:.8>" },
@@ -52,8 +61,8 @@ const FirstPage: React.FC = () => {
                 .then((apiResult) => {
                     if (apiResult.candidates.length > 0) {
                         setPrompt(apiResult.candidates[0]["content"]["parts"][0]["text"]);
-                      setLastSelectedText(selectedText)
-        }
+                        setLastSelectedText(selectedText);
+                    }
                 })
                 .catch((error) => {
                     console.error("Error fetching Gemini result:", error);
@@ -77,21 +86,32 @@ const FirstPage: React.FC = () => {
     };
 
     const handleCastSelect = (actor: Actor) => {
-        // Can only handle one lora at a time.
         setSelectedCast([actor]);
     };
 
     const handleSave = () => {
         if (generatedImage) {
-            const savedImage = { id: uuidv4(), img: generatedImage, prompt:lastGenPrompt, selectedText: lastSelectedText };
-            db.addGeneratedImage(savedImage); // Save image to local db
-            setSavedImages((prev) => [...prev, generatedImage]); // Add image to gallery
+            const savedImage: GeneratedImage = {
+                id: uuidv4(),
+                img: generatedImage,
+                prompt: lastGenPrompt
+            };
+            db.addGeneratedImage(savedImage);
+            setSavedImages((prev) => [...prev, savedImage]);
         }
     };
 
     // Handle opening and closing the gallery modal
     const handleOpenGallery = () => setOpenGallery(true);
     const handleCloseGallery = () => setOpenGallery(false);
+
+    // Handle opening and closing the individual image modal
+    const handleOpenImageModal = (img: string, imgPrompt: string) => {
+        setSelectedImage(img);
+        setSelectedImagePrompt(imgPrompt);
+        setOpenImageModal(true);
+    };
+    const handleCloseImageModal = () => setOpenImageModal(false);
 
     return (
         <React.Fragment>
@@ -107,24 +127,24 @@ const FirstPage: React.FC = () => {
                     </Typography>
                 </Box>
 
-        <Grid container spacing={2}>
-          {/* Left Section */}
-          <Grid item xs={6}>
-            <Box
-              sx={{
-                bgcolor: "#cfe8fc",
-                minHeight: "80vh",
-                padding: 2,
-              }}>
-              <Typography variant="h4">Book Content</Typography>
-              {/* Book content that users can select text from */}
-              <Box sx={{ marginTop: 2 }} onMouseUp={handleMouseUp}>
-                <Typography variant="body1">
-                  {harrypottertext}
-                </Typography>
-              </Box>
-            </Box>
-          </Grid>
+                <Grid container spacing={2}>
+                    {/* Left Section */}
+                    <Grid item xs={6}>
+                        <Box
+                            sx={{
+                                bgcolor: "#cfe8fc",
+                                minHeight: "80vh",
+                                padding: 2,
+                            }}
+                        >
+                            <Typography variant="h4">Book Content</Typography>
+                            <Box sx={{ marginTop: 2 }} onMouseUp={handleMouseUp}>
+                                <Typography variant="body1">
+                                    {harrypottertext}
+                                </Typography>
+                            </Box>
+                        </Box>
+                    </Grid>
 
                     {/* Right Section */}
                     <Grid item xs={6}>
@@ -275,13 +295,14 @@ const FirstPage: React.FC = () => {
                             Gallery
                         </Typography>
                         <ImageList cols={4} rowHeight={164} sx={{ marginBottom: 2 }}>
-                            {savedImages.map((img, index) => (
+                            {savedImages.map((imgObj, index) => (
                                 <ImageListItem key={index}>
                                     <img
-                                        src={img}
+                                        src={imgObj.img}
                                         alt={`Generated-${index}`}
                                         loading="lazy"
                                         style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                        onClick={() => handleOpenImageModal(imgObj.img, imgObj.prompt)}
                                     />
                                 </ImageListItem>
                             ))}
@@ -293,6 +314,43 @@ const FirstPage: React.FC = () => {
                         >
                             Generate Storybook
                         </Button>
+                    </Box>
+                </Modal>
+
+                {/* Individual Image Modal */}
+                <Modal
+                    open={openImageModal}
+                    onClose={handleCloseImageModal}
+                    aria-labelledby="image-modal-title"
+                    aria-describedby="image-modal-description"
+                >
+                    <Box
+                        sx={{
+                            position: "absolute",
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, -50%)",
+                            width: "50%",
+                            maxHeight: "70%",
+                            bgcolor: "background.paper",
+                            border: "2px solid #000",
+                            boxShadow: 24,
+                            p: 4,
+                            overflowY: "auto",
+                        }}
+                    >
+                        {selectedImage && (
+                            <>
+                                <img
+                                    src={selectedImage}
+                                    alt="Selected"
+                                    style={{ width: "100%", height: "auto", objectFit: "contain" }}
+                                />
+                                <Typography variant="h6" sx={{ mt: 2 }}>
+                                    Prompt: {selectedImagePrompt}
+                                </Typography>
+                            </>
+                        )}
                     </Box>
                 </Modal>
             </Container>
