@@ -21,6 +21,7 @@ import { Actor, fetchStableDiffusionTxt2img } from './apis/stablediffusionapi';
 import { uuidv4 } from './utility/utility';
 import db from './db/jsondb';
 import ImageStyleSelect from "./components/StyleSelect";
+import { harrypottertext } from "./data/harrypottertxt";
 
 const FirstPage: React.FC = () => {
     const [prompt, setPrompt] = useState("");
@@ -106,25 +107,24 @@ const FirstPage: React.FC = () => {
                     </Typography>
                 </Box>
 
-                <Grid container spacing={2}>
-                    {/* Left Section */}
-                    <Grid item xs={6}>
-                        <Box
-                            sx={{
-                                bgcolor: "#cfe8fc",
-                                minHeight: "80vh",
-                                padding: 2,
-                            }}
-                        >
-                            <Typography variant="h4">Book Content</Typography>
-                            {/* Book content that users can select text from */}
-                            <Box sx={{ marginTop: 2 }} onMouseUp={handleMouseUp}>
-                                <Typography variant="body1">
-                                    {text}
-                                </Typography>
-                            </Box>
-                        </Box>
-                    </Grid>
+        <Grid container spacing={2}>
+          {/* Left Section */}
+          <Grid item xs={6}>
+            <Box
+              sx={{
+                bgcolor: "#cfe8fc",
+                minHeight: "80vh",
+                padding: 2,
+              }}>
+              <Typography variant="h4">Book Content</Typography>
+              {/* Book content that users can select text from */}
+              <Box sx={{ marginTop: 2 }} onMouseUp={handleMouseUp}>
+                <Typography variant="body1">
+                  {harrypottertext}
+                </Typography>
+              </Box>
+            </Box>
+          </Grid>
 
                     {/* Right Section */}
                     <Grid item xs={6}>
