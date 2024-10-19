@@ -10,7 +10,7 @@ const readJSONFile = () => {
   return data ? JSON.parse(data) : {};
 };
 
-const database: { [key: string]: GeneratedImage } = {};
+const database: { [key: string]: GeneratedImage } = readJSONFile();
 
 const addGeneratedImage = (generatedImage: GeneratedImage) => {
   database[generatedImage.id] = generatedImage;

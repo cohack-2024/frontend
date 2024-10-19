@@ -78,6 +78,11 @@ const FirstPage: React.FC = () => {
 
     const handleCastSelect = (actor: Actor) => {
         // Can only handle one lora at a time.
+        if (selectedCast.find(f => f.name ===actor.name)){
+            setSelectedCast([])
+            return
+        }
+
         setSelectedCast([actor]);
     };
 

@@ -98,7 +98,7 @@ export const fetchStableDiffusionTxt2img = (
   console.log(prompt)
   const payload = {
     prompt,
-    negative_prompt: "nudity, gore, nsfw" + negative_prompt,
+    negative_prompt: "nudity, gore, nsfw",
     width,
     height,
     steps,
