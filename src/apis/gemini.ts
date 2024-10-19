@@ -14,6 +14,18 @@ export const fetchGeminiResult = async (bookText: string) => {
         text: bookText,
       },
     },
+    safetySettings: [
+            {
+                category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+                threshold: "BLOCK_ONLY_HIGH"
+            }
+        ],
+        generationConfig: {
+            temperature: 1.0,
+            maxOutputTokens: 75,
+            topP: 0.8,
+            topK: 10
+        }
   };
 
   const response = await fetch(
