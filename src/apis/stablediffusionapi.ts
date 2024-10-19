@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const stablediffusionApi = axios.create({
-  baseURL: "https://cb5e2743f03f8d4415.gradio.live/sdapi/v1",
+  baseURL: "https://bedf444662aabea75c.gradio.live/sdapi/v1",
   headers: {
     "Content-Type": "application/json",
   },

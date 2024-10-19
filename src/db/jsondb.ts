@@ -21,6 +21,7 @@ const addGeneratedImage = (generatedImage: GeneratedImage) => {
 
 const db = {
   addGeneratedImage,
+  database
 };
 
 export default db;
