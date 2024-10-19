@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Container, CssBaseline, Grid, Typography, Button, TextField, Stack, Link } from '@mui/material';
+import { Box, Container, CssBaseline, Grid, Typography, Button, TextField, Stack, Link as MuiLink } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom'; // Import from react-router-dom
 
 const FirstPage: React.FC = () => {
     return (
@@ -46,12 +47,12 @@ const FirstPage: React.FC = () => {
                             {/* Generate and Gallery Links */}
                             <Stack direction="row" spacing={2} sx={{ marginBottom: 2 }}>
                                 <Typography variant="h5">Generate</Typography>
-                                <Link href="/src/second_page" underline="hover">
+                                <MuiLink component={RouterLink} to="/second_page" underline="hover">
                                     <Typography variant="h5">Gallery</Typography>
-                                </Link>
+                                </MuiLink>
                             </Stack>
 
-                            {/* Prompt Input Section 01*/}
+                            {/* Prompt Input Section */}
                             <Box sx={{ marginBottom: 2 }}>
                                 <TextField
                                     label="Prompt"
