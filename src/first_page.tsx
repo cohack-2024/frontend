@@ -177,11 +177,13 @@ const FirstPage: React.FC = () => {
                   onChange={(e) => setPrompt(e.target.value)}
                 />
                 <Button
-                  variant="contained"
-                  sx={{ marginTop: 2, width: "100%" }}
-                  onClick={sendPromptToStableDiffusionAPI}>
-                  New Prompt
-                </Button>
+                                    variant="contained"
+                                    sx={{ marginTop: 2, width: '100%' }}
+                                    onClick={onGenerate}
+                                    disabled={loading ? true: false}
+                                >
+                                    {loading? <CircularProgress sx={{ color: '#8edfe8' }}/>: 'Generate'}
+                                </Button>
               </Box>
 
                             {/* Image Generation Section */}
