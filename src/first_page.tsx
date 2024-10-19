@@ -6,7 +6,7 @@ const FirstPage: React.FC = () => {
         <React.Fragment>
             <CssBaseline />
             <Container maxWidth="lg" sx={{ marginTop: 4 }}>
-                {/* Application Heading storybook */}
+                {/* Application Heading storybook_ */}
                 <Box sx={{ marginBottom: 4, textAlign: 'center' }}>
                     <Typography variant="h3" component="h1" sx={{ fontWeight: 'bold' }}>
                         Storybook

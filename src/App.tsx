@@ -37,7 +37,7 @@ function App() {
     );
 }
 
-export default App ;*/
+export default App;*/
 import React from 'react';
 import FirstPage from './first_page';
 import './App.css';
