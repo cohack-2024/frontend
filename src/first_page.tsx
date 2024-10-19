@@ -3,9 +3,12 @@ import { Box, Container, CssBaseline, Grid, Typography, Button, TextField, Stack
 import { fetchGeminiResult } from './apis/gemini';
 import { Actor, fetchStableDiffusionTxt2img } from './apis/stablediffusionapi';
 import { TESTIMG } from './data/testimg';
+import db from './db/jsondb';
+import { uuidv4 } from './utility/utility';
 
 const FirstPage: React.FC = () => {
     const [prompt, setPrompt] = useState('')
+    const [lastGenPrompt, setLastGenPrompt] = useState('')
     const [generatedImage, setGeneratedImage] = useState('')
     const [loading, setLoading] = useState(false)
     const [selectedCast, setSelectedCast] = useState<Actor[]>([])
@@ -20,36 +23,32 @@ const FirstPage: React.FC = () => {
     // },[])
 
     const onGenerate = () => {
-        // setGeneratedImage(TESTIMG)
-
-        console.log('sending')
-        
+        const lgprompt = prompt
         setLoading(true)
         fetchStableDiffusionTxt2img(prompt, 'Graphic Novel',false, selectedCast).then(
             res => {
                 const image = `data:image/png;base64,${res.data.images[0]}`
                 setGeneratedImage(image)
-                // console.log(res)
-                // console.log(res.data.images[0])
+                setLastGenPrompt(lgprompt)
             }
         ).catch(e=> {console.log(e)}).finally(() => setLoading(false))
     } 
     
     const handleCastSelect = (actor:Actor) => {
-
-        const i = selectedCast.findIndex(f => f.name ===actor.name)
-        if (i ===-1){
-            console.log('here')
-            // selectedCast.push(actor)
-            setSelectedCast([...selectedCast, actor])
-            return
-        }
-        setSelectedCast([...selectedCast.slice(0,i),...selectedCast.slice(i+1)])
+        // Can only handle one lora at a time. Woops
+        setSelectedCast([actor])
     }
     console.log(selectedCast)
     const cast:Actor[] = [
-        {name:"Baylan Skoll", image: "https://m.media-amazon.com/images/M/MV5BZDg3ZjMxYWEtNzAwNy00MjczLWE2OTItZWNhMjM3NmRlNTRmXkEyXkFqcGc@._V1_.jpg", triggerwords:"Baylan Skoll"}
+        {name:"Baylan Skoll", image: "https://m.media-amazon.com/images/M/MV5BZDg3ZjMxYWEtNzAwNy00MjczLWE2OTItZWNhMjM3NmRlNTRmXkEyXkFqcGc@._V1_.jpg", triggerwords:"BAYLAN SKOLL <lora:Baylan_Skoll:.8>"},
+        {name:"Omar Nobody", image: "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/42396cbc-828d-4e39-a346-86f7415f67e3/original=true,quality=90/_SDXL_OmarCover.jpeg", triggerwords:"OMARNOBODY <lora:OmarNobody:.8>"},
+        {name:"Nova", image:"https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/094f08e0-b428-41b2-9ac5-4678ac93d389/width=450/00280-3731251447.jpeg", triggerwords: "NOVA <lora:nova_nobody_v2_xl:.8>"}
     ]
+
+    const handleSave = () => {
+        const savedImage = {id:uuidv4(), img:generatedImage, prompt}
+        db.addGeneratedImage(savedImage)
+    }
 
     return (
         <React.Fragment>
@@ -165,6 +164,9 @@ const FirstPage: React.FC = () => {
                                 }
                                 
                             </Box>
+                            {generatedImage && <Stack direction="row" justifyContent="center" alignItems="center" spacing={2} sx={{margin:'10px}'}}>
+                                <Button variant="contained" onClick={handleSave}>Save</Button>
+                            </Stack>}
                         </Box>
                     </Grid>
                 </Grid>

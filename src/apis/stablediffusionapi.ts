@@ -82,21 +82,23 @@ export const fetchStableDiffusionTxt2img = (
   let loraString = ""; // Initialize an empty string
 
   cast.forEach((actor) => {
-    if (ACTOR_TO_PROMPT_MAP[actor.name]) {
-      loraString += ", "+ACTOR_TO_PROMPT_MAP[actor.name]; // Append matched prompt and add space
-    }
-  });
+    loraString += ` ${actor.triggerwords}`
 
+    // if (ACTOR_TO_PROMPT_MAP[actor.name]) {
+    //   loraString += ", "+ACTOR_TO_PROMPT_MAP[actor.name]; // Append matched prompt and add space
+    // }
+  });
+  prompt = prompt + loraString
   
   //Hack for the graphic novel model. Looks alot better
   if (checkpoint_label==="Graphic Novel") {
     prompt = "graphic novel flat colors style, cropped detail, fine intricate lineart, hatched shadows, " + prompt
   }
 
-
+  console.log(prompt)
   const payload = {
-    prompt: prompt+loraString,
-    negative_prompt: "nudity, gore, " + negative_prompt,
+    prompt,
+    negative_prompt: "nudity, gore, nsfw" + negative_prompt,
     width,
     height,
     steps,
