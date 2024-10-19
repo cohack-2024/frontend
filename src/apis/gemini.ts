@@ -1,13 +1,19 @@
-const GEMINI_API_KEY = process.env.GEMINI_API;
-const GEMINI_API_URL = process.env.GEMINI_ENDPOINT;
+const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API;
+const GEMINI_API_URL = process.env.REACT_APP_GEMINI_ENDPOINT;
 
-export const fetchGeminiResult = async (prompt: string) => {
+const SYSTEM_INSTRUCTION = `You are a text-to-image generation expert. Whenever provided with text, generate an image prompt by focusing on key elements and themes, using a concise, comma-separated list of important keywords.`;
+export const fetchGeminiResult = async (bookText: string) => {
   const requestBody = {
-    contents: [
-      {
-        parts: [{ text: prompt }],
+    system_instruction: {
+      parts: {
+        text: SYSTEM_INSTRUCTION,
       },
-    ],
+    },
+    contents: {
+      parts: {
+        text: bookText,
+      },
+    },
   };
 
   const response = await fetch(
@@ -19,9 +25,6 @@ export const fetchGeminiResult = async (prompt: string) => {
       },
       body: JSON.stringify(requestBody),
     }
-  );
-  console.log(
-    `${GEMINI_API_URL}/v1beta/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`
   );
 
   if (!response.ok) {
