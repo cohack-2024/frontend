@@ -17,9 +17,9 @@ const ImageStyleSelect: React.FC<ImageStyleSelectProps> = ({ handleStyleChange }
 
   return (
     <FormControl fullWidth > 
-      <InputLabel id="style-select-label">Image Style</InputLabel>
+      <InputLabel id="systinst-select-label">Syst Inst</InputLabel>
       <Select
-        labelId="style-select-label"
+        labelId="systinst-select-label"
         value={style}
         label="Image Style"
         onChange={handleChange}
