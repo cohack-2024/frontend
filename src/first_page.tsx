@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Container,
@@ -7,13 +7,22 @@ import {
   Typography,
   TextField,
   Stack,
-  Link,
+  Link, CircularProgress, ImageList, Card, CardActionArea,
   Button,
 } from "@mui/material";
-import { fetchGeminiResult } from "./apis/gemini";
+import { fetchGeminiResult } from './apis/gemini';
+import { Actor, fetchStableDiffusionTxt2img } from './apis/stablediffusionapi';
+import { TESTIMG } from './data/testimg';
+import db from './db/jsondb';
+import { uuidv4 } from './utility/utility';
 
 const FirstPage: React.FC = () => {
   const [prompt, setPrompt] = useState("");
+  const [lastGenPrompt, setLastGenPrompt] = useState('')
+  const [generatedImage, setGeneratedImage] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [selectedCast, setSelectedCast] = useState<Actor[]>([])
+  const text = "The palace still shook occasionally as the earth rumbled in memory, groaned as if it would deny what had happened. Bars of sunlight cast through rents in the walls made motes of dust glitter where they yet hung in the air. Scorch-marks marred the walls, the floors, the ceilings. Broad black smears crossed the blistered paints and gilt of once-bright murals, soot overlaying crumbling friezes of men and animals which seemed to have attempted to walk before the madness grew quiet. The dead lay everywhere, men and women and children, struck down in attempted flight by the lightnings that had flashed down every corridor, or seized by the fires that had stalked them, or sunken into stone of the palace, the stones that had flowed and sought, almost alive, before stillness came again. In odd counterpoint, colorful tapestries and paintings, masterworks all, hung undisturbed except where bulging walls had pushed them awry. Finely carved furnishings, inlaid with ivory and gold, stood untouched except where rippling floors had toppled them. The mind-twisting had struck at the core, ignoring peripheral things."
 
   // Handle mouse up event to get selected text and fetch from Gemini API
   const handleMouseUp = () => {
@@ -36,6 +45,34 @@ const FirstPage: React.FC = () => {
   const sendPromptToStableDiffusionAPI = () => {
     console.log(prompt);
   };
+    
+    const onGenerate = () => {
+        const lgprompt = prompt
+        setLoading(true)
+        fetchStableDiffusionTxt2img(prompt, 'Graphic Novel',false, selectedCast).then(
+            res => {
+                const image = `data:image/png;base64,${res.data.images[0]}`
+                setGeneratedImage(image)
+                setLastGenPrompt(lgprompt)
+            }
+        ).catch(e=> {console.log(e)}).finally(() => setLoading(false))
+    } 
+    
+    const handleCastSelect = (actor:Actor) => {
+        // Can only handle one lora at a time. Woops
+        setSelectedCast([actor])
+    }
+    console.log(selectedCast)
+    const cast:Actor[] = [
+        {name:"Baylan Skoll", image: "https://m.media-amazon.com/images/M/MV5BZDg3ZjMxYWEtNzAwNy00MjczLWE2OTItZWNhMjM3NmRlNTRmXkEyXkFqcGc@._V1_.jpg", triggerwords:"BAYLAN SKOLL <lora:Baylan_Skoll:.8>"},
+        {name:"Omar Nobody", image: "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/42396cbc-828d-4e39-a346-86f7415f67e3/original=true,quality=90/_SDXL_OmarCover.jpeg", triggerwords:"OMARNOBODY <lora:OmarNobody:.8>"},
+        {name:"Nova", image:"https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/094f08e0-b428-41b2-9ac5-4678ac93d389/width=450/00280-3731251447.jpeg", triggerwords: "NOVA <lora:nova_nobody_v2_xl:.8>"}
+    ]
+
+    const handleSave = () => {
+        const savedImage = {id:uuidv4(), img:generatedImage, prompt}
+        db.addGeneratedImage(savedImage)
+    }
 
   return (
     <React.Fragment>
@@ -57,7 +94,7 @@ const FirstPage: React.FC = () => {
             <Box
               sx={{
                 bgcolor: "#cfe8fc",
-                height: "80vh",
+                minHeight: "80vh",
                 padding: 2,
               }}>
               <Typography variant="h4">Book Content</Typography>
@@ -93,7 +130,7 @@ const FirstPage: React.FC = () => {
             <Box
               sx={{
                 bgcolor: "#f0e68c",
-                height: "80vh",
+                minHeight: "80vh",
                 padding: 2,
               }}>
               {/* Generate and Gallery Links */}
@@ -103,6 +140,30 @@ const FirstPage: React.FC = () => {
                   <Typography variant="h5">Gallery</Typography>
                 </Link>
               </Stack>
+
+                            {/* Cast */}
+                            <Stack direction="row" spacing={2}>
+                                {cast.map((c, i)=> <Card key={i}
+                                                            sx={{
+                                                            // border:'1px solid #ccc',
+                                                            border: selectedCast.find(f => f.name ===c.name) ? '3px solid #3f51b5' : '1px solid #ccc',
+                                                            borderRadius: 2,
+                                                            width: 150,
+                                                            height: 150,
+                                                            overflow: 'hidden',
+                                                            }}
+                                                        >
+                                                        <CardActionArea onClick={() => handleCastSelect(c)}>
+                                                            <img
+                                                                src={c.image}
+                                                                alt={`image-${i}`}
+                                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                            />
+                                                            </CardActionArea>
+                                                        </Card>)}
+                            </Stack>
+
+
 
               {/* Prompt Input Section */}
               <Box sx={{ marginBottom: 2 }}>
@@ -123,26 +184,37 @@ const FirstPage: React.FC = () => {
                 </Button>
               </Box>
 
-              {/* Image Generation Section */}
-              <Box
-                sx={{
-                  bgcolor: "#f5f5f5",
-                  height: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  border: "1px solid #ccc",
-                }}>
-                <Typography variant="body1" color="textSecondary">
-                  Generated image will appear here
-                </Typography>
-              </Box>
-            </Box>
-          </Grid>
-        </Grid>
-      </Container>
-    </React.Fragment>
-  );
+                            {/* Image Generation Section */}
+                            <Box
+                                sx={{
+                                    bgcolor: '#f5f5f5',
+                                    // maxWidth:512,
+                                    // maxHeight:512,
+                                    // height:512,
+                                    height: '50%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    border: '1px solid #ccc'
+                                }}
+                            >
+                                { generatedImage ? <img src={generatedImage} alt="" 
+                                style={{width: '100%', height: '100%',objectFit: 'cover'}}
+                                />: <Typography variant="body1" color="textSecondary">
+                                Generated image will appear here
+                            </Typography>
+                                }
+                                
+                            </Box>
+                            {generatedImage && <Stack direction="row" justifyContent="center" alignItems="center" spacing={2} sx={{margin:'10px}'}}>
+                                <Button variant="contained" onClick={handleSave}>Save</Button>
+                            </Stack>}
+                        </Box>
+                    </Grid>
+                </Grid>
+            </Container>
+        </React.Fragment>
+    );
 };
 
 export default FirstPage;
