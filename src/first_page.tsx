@@ -51,7 +51,7 @@ const FirstPage: React.FC = () => {
                                 </Link>
                             </Stack>
 
-                            {/* Prompt Input Section */}
+                            {/* Prompt Input Section 01*/}
                             <Box sx={{ marginBottom: 2 }}>
                                 <TextField
                                     label="Prompt"
