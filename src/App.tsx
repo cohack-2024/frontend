@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import logo from "./logo.svg";
 import "./App.css";
-import { fetchGeminiResult } from "./apis/gemini";
 
 // Assuming result is an object with candidates and usageMetadata properties
 interface GeminiResult {
